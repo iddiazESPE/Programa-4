@@ -13,20 +13,21 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Pattern;
 import org.bson.Document;
 
 
 public class Start {
 
-
+    
+    static ArrayList<String[]> datos=new ArrayList<>();
+    
     public static void main(String[] args) {
         
-        //leer();
+        leer();
+     //mostrar();
         Insercion();
-        
-        
+          
     }
     
     //Para leer el documento
@@ -42,8 +43,10 @@ public class Start {
             String linea;
             
             while ((linea = br.readLine()) != null) {
-             
-                separar(linea);
+             String separador = Pattern.quote("|");
+             String[] parts = linea.split(separador);
+             datos.add(parts);
+         
             }    
         } catch (Exception e) {
             e.printStackTrace();
@@ -56,25 +59,20 @@ public class Start {
                 e2.printStackTrace();
             }
         }
+           
     }
     //Separar y guardar en una Array
     public static void separar(String str)
     {
         String separador = Pattern.quote("|");
         String[] parts = str.split(separador);
-        ArrayList<String> tempo=new ArrayList<String>();
-        
-         for(int i=0; i<parts.length;i++)
-        { 
-            tempo.add(parts[i]);
+        datos.add(parts);
+    }
+    
+    public static void mostrar(){
+        for (int i = 0;i < datos.size(); i++) {
+            System.out.println(""+datos.get(i)[0]);
         }
-        System.out.println(tempo);
-        
-        //for(int i=0; i<1;i++)
-        //{
-        //    documents.add(new Document(tempo.toString(),i));
-        //}
-        //System.out.println(documents);
     }
     
     public static MongoClient Conexion(String lo,Integer puerto)
@@ -85,9 +83,10 @@ public class Start {
     
     public static void Insercion() {
         
+        long tiempo_inicio, tiempo_final;
         MongoClient mongoClient=Conexion("localhost",27017);
        
-        // Creating Credentials 
+        // Creating Credentials // cambia en nombre de la base
         MongoCredential credential; 
         credential = MongoCredential.createCredential("sampleUser", "prueba", 
                 "password".toCharArray());
@@ -103,19 +102,22 @@ public class Start {
         MongoCollection<Document> collection = database.getCollection("persona");
         System.out.println("Coleccion persona creada");
 
-        
-        //List<Document> documents = new ArrayList<Document>();        
-        Document document = new Document()
-                .append("cedula", 17972)
-                .append("nombre", "database")
-                .append("apellido","fdkfkf")
-                .append("fechaNacimiento", "15466");
-        
+        tiempo_inicio  = System.currentTimeMillis();
+        //List<Document> documents = new ArrayList<Document>(); 
+        for (int i = 0; i < datos.size(); i++) {
+                Document document = new Document()
+                .append("cedula", datos.get(i)[0])
+                .append("nombre", datos.get(i)[1])
+                .append("apellido",datos.get(i)[2])
+                .append("fechaNacimiento",datos.get(i)[3]); 
         // Para insertar una coleecion
             collection.insertOne(document);
+        }
+        tiempo_final  = System.currentTimeMillis();
+        System.out.println ( "El tiempo transcurrido fue de:"+ (tiempo_final - tiempo_inicio ) +" millisegundos");
         // Para insertar varias coleeciones
         //collection.insertMany(documents);
-        System.out.println("Document inserted successfully");
+        System.out.println("Documentos insertados");
     }
     
 }
